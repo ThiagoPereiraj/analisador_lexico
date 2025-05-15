@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdbool.h>
+
+// Função para verificar se uma string é uma palavra-chave
+bool eh_palavra_chave(const char *str) {
+    const char *palavras_chave[] = {"if", "return", NULL};
+    for (int i = 0; palavras_chave[i] != NULL; i++) {
+        if (strcmp(str, palavras_chave[i]) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void analisar_lexico_c(const char *codigo) {
+    int i = 0;
+    int tamanho = strlen(codigo);
+
+    printf("Analisando código em C: %s\n", codigo);
+
+    while (i < tamanho) {
+        char c = codigo[i];
+
+        // 1. Ignorar espaços em branco
+        if (isspace(c)) {
+            i++;
+            continue;
+        }
+
+        // 2. Números
+        if (isdigit(c)) {
+            char numero_str[256]; // Buffer para o número
+            int k = 0;
+            bool tem_ponto = false;
+            int start_pos_num = i;
+
+            while (i < tamanho && (isdigit(codigo[i]) || codigo[i] == '.')) {
+                if (codigo[i] == '.') {
+                    if (tem_ponto) {
+                        break; // Segundo ponto
+                    }
+                    // Verifica se o ponto é seguido por um dígito
+                    if (i + 1 >= tamanho || !isdigit(codigo[i+1])){
+                        break; // Ponto não seguido por dígito, não faz parte do número atual
+                    }
+                    tem_ponto = true;
+                }
+                if (k < 255) {
+                    numero_str[k++] = codigo[i];
+                }
+                i++;
+            }
+            numero_str[k] = '\0';
+            printf("TOKEN: NUMERO %s\n", numero_str);
+            continue;
+        }
+
+        // 3. Identificadores e Palavras-chave
+        if (isalpha(c) || c == '_') {
+            char identificador_str[256];
+            int k = 0;
+            while (i < tamanho && (isalnum(codigo[i]) || codigo[i] == '_')) {
+                if (k < 255) {
+                    identificador_str[k++] = codigo[i];
+                }
+                i++;
+            }
+            identificador_str[k] = '\0';
+
+            if (eh_palavra_chave(identificador_str)) {
+                printf("TOKEN: PALAVRA_CHAVE %s\n", identificador_str);
+            } else {
+                printf("TOKEN: IDENTIFICADOR %s\n", identificador_str);
+            }
+            continue;
+        }
+
+        // 4. Operadores e Símbolos
+        // Verificar operadores de múltiplos caracteres primeiro (ex: ==)
+        if (i + 1 < tamanho) {
+            if (codigo[i] == '=' && codigo[i+1] == '=') {
+                printf("TOKEN: OPERADOR ==\n");
+                i += 2;
+                continue;
+            }
+        }
+
+        // Operadores e símbolos de um caractere
+        if (c == '(' || c == ')' || c == ';' ) {
+             printf("TOKEN: SIMBOLO %c\n", c);
+             i++;
+             continue;
+        }
+        if (c == '+') {
+            printf("TOKEN: OPERADOR %c\n", c);
+            i++;
+            continue;
+        }
+        
+        // 5. Caractere desconhecido
+        printf("TOKEN: DESCONHECIDO %c\n", c);
+        i++;
+    }
+}
+
+int main() {
+    const char *codigo_exemplo1 = "if (x == 10.9.) return x + 1;";
+    analisar_lexico_c(codigo_exemplo1);
+
+    printf("\n");
+
+    const char *codigo_exemplo2 = "123.45.67 if_var _test ==+";
+    analisar_lexico_c(codigo_exemplo2);
+    
+    return 0;
+}
+
