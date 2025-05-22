@@ -1,0 +1,180 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdbool.h>
+
+// Função para verificar se uma string é uma palavra-chave da LambdaLang
+bool eh_palavra_chave_lambdalang(const char *str) {
+    const char *palavras_chave[] = {
+        "def", "lambda", "let", "if", "then", "else", NULL
+    };
+    for (int i = 0; palavras_chave[i] != NULL; i++) {
+        if (strcmp(str, palavras_chave[i]) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void analisar_lexico_lambdalang_c(const char *codigo) {
+    int i = 0;
+    int tamanho = strlen(codigo);
+
+    printf("Analisando código LambdaLang em C: %s\n", codigo);
+
+    while (i < tamanho) {
+        char c = codigo[i];
+        char proximo_char = (i + 1 < tamanho) ? codigo[i+1] : '\0';
+
+        // 1. Ignorar espaços em branco
+        if (isspace(c)) {
+            i++;
+            continue;
+        }
+
+        // 2. Comentários (-- até o final da linha)
+        if (c == '-' && proximo_char == '-') {
+            // printf("TOKEN: COMMENT ");
+            i += 2; // Pula "--"
+            while (i < tamanho && codigo[i] != '\n') {
+                // putchar(codigo[i]);
+                i++;
+            }
+            // putchar('\n');
+            if (i < tamanho && codigo[i] == '\n') {
+                 i++; // Pula o newline
+            }
+            continue;
+        }
+
+        // 3. Números (inteiros ou ponto flutuante simples)
+        if (isdigit(c)) {
+            char numero_str[256];
+            int k = 0;
+            bool tem_ponto = false;
+            while (i < tamanho && (isdigit(codigo[i]) || (codigo[i] == '.' && !tem_ponto))) {
+                if (codigo[i] == '.') {
+                    // Verifica se o ponto é seguido por um dígito para ser um decimal válido
+                    if (i + 1 >= tamanho || !isdigit(codigo[i+1])){
+                        break; // Ponto não seguido por dígito, não faz parte do número atual
+                    }
+                    tem_ponto = true;
+                }
+                if (k < 255) {
+                    numero_str[k++] = codigo[i];
+                }
+                i++;
+            }
+            numero_str[k] = '\0';            printf("TOKEN: NUMBER_LITERAL %s\n", numero_str);
+            continue;
+        }
+
+        // 4. Strings (delimitadas por aspas duplas)
+        if (c == '"') {
+            char string_literal_str[1024]; // Buffer para a string
+            int k = 0;
+            i++; // Pula a aspa inicial
+            while (i < tamanho && codigo[i] != '"') {
+                if (codigo[i] == '\\' && i + 1 < tamanho) { // Tratar escapes simples como \"
+                    if (k < 1023) string_literal_str[k++] = codigo[i++]; // Adiciona a barra
+                }
+                if (k < 1023) {
+                    string_literal_str[k++] = codigo[i];
+                }
+                i++;
+            }
+            if (i < tamanho && codigo[i] == '"') {
+                i++; // Pula a aspa final
+            }
+            string_literal_str[k] = '\0';            printf("TOKEN: STRING_LITERAL \"%s\"\n", string_literal_str);
+            continue;
+        }
+
+        // 5. Identificadores e Palavras-chave
+        if (isalpha(c) || c == '_') {
+            char identificador_str[256];
+            int k = 0;
+            while (i < tamanho && (isalnum(codigo[i]) || codigo[i] == '_')) {
+                if (k < 255) {
+                    identificador_str[k++] = codigo[i];
+                }
+                i++;
+            }
+            identificador_str[k] = '\0';            if (eh_palavra_chave_lambdalang(identificador_str)) {
+                // Converte para maiúsculas para o nome do token
+                char keyword_token_name[256] = "KEYWORD_";
+                int j = 0;
+                while(identificador_str[j]){
+                    keyword_token_name[j+8] = toupper(identificador_str[j]);
+                    j++;
+                }
+                keyword_token_name[j+8] = '\0';                printf("TOKEN: %s %s\n", keyword_token_name, identificador_str);
+            } else {
+                printf("TOKEN: IDENTIFIER %s\n", identificador_str);
+            }
+            continue;
+        }
+
+        // 6. Operadores e Símbolos
+        if (c == '-' && proximo_char == '>') {
+            printf("TOKEN: ARROW ->\n");
+            i += 2;
+            continue;
+        }
+        if (c == '=' && proximo_char == '=') {
+            printf("TOKEN: OPERATOR ==\n");
+            i += 2;
+            continue;
+        }
+        if (c == '!' && proximo_char == '=') { // Adicionando != como operador
+            printf("TOKEN: OPERATOR !=\n");
+            i += 2;
+            continue;
+        }
+         if (c == '<' && proximo_char == '=') { 
+            printf("TOKEN: OPERATOR <=\n");
+            i += 2;
+            continue;
+        }
+        if (c == '>' && proximo_char == '=') { 
+            printf("TOKEN: OPERATOR >=\n");
+            i += 2;
+            continue;
+        }
+
+        switch (c) {
+            case '+': printf("TOKEN: OPERATOR +\n"); i++; continue;
+            case '-': printf("TOKEN: OPERATOR -\n"); i++; continue;
+            case '*': printf("TOKEN: OPERATOR *\n"); i++; continue;
+            case '/': printf("TOKEN: OPERATOR /\n"); i++; continue;
+            case '=': printf("TOKEN: ASSIGN =\n"); i++; continue;
+            case '<': printf("TOKEN: OPERATOR <\n"); i++; continue;
+            case '>': printf("TOKEN: OPERATOR >\n"); i++; continue;
+            case '(': printf("TOKEN: LPAREN (\n"); i++; continue;
+            case ')': printf("TOKEN: RPAREN )\n"); i++; continue;
+            case '[': printf("TOKEN: LBRACKET [\n"); i++; continue;
+            case ']': printf("TOKEN: RBRACKET ]\n"); i++; continue;
+            case ',': printf("TOKEN: COMMA ,\n"); i++; continue;
+        }
+
+        // 7. Caractere desconhecido
+        printf("TOKEN: DESCONHECIDO %c\n", c);
+        i++;
+    }
+    printf("TOKEN: EOF\n"); // Adiciona EOF no final
+}
+
+int main() {
+    const char *codigo_exemplo_lambdalang1 = "def soma x y = x + y -- calcula a soma\nlet resultado = soma 10 20\nif resultado > 25 then \"maior\" else \"menor ou igual\"\nlambda z -> z * z";
+    analisar_lexico_lambdalang_c(codigo_exemplo_lambdalang1);
+
+    printf("\n-- Novo Teste --\n");
+    const char *codigo_exemplo_lambdalang2 = "[1, 2.5, lambda_func] -- uma lista\nlet val = 100 / 2 -- divisão\n-- fim do código";
+    analisar_lexico_lambdalang_c(codigo_exemplo_lambdalang2);
+
+    printf("\n-- Teste com todos os tokens --\n");
+    const char *codigo_todos_tokens = "def f x = if x == 1 then let y = \"string\" else [1,2.0] -> lambda -- comment";
+    analisar_lexico_lambdalang_c(codigo_todos_tokens);
+
+    return 0;
+}
