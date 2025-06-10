@@ -1,199 +1,140 @@
-
 from analisador_lexico import AnalisadorLexico, TipoToken
 
 def analisar_programa_simples(codigo):
-    """Análise sintática simplificada que funciona"""
     print("=== ANÁLISE LÉXICA ===")
-    analisador_lexico = AnalisadorLexico(codigo)
-    tokens, erros_lexicos = analisador_lexico.analisar()
-    
-    if erros_lexicos:
+    analisador = AnalisadorLexico(codigo)
+    tokens, erros = analisador.analisar()
+
+    # Tratamento de erros léxicos
+    if erros:
         print("Erros léxicos encontrados:")
-        for erro in erros_lexicos:
+        for erro in erros:
             print(f"  {erro.mensagem} (Linha: {erro.linha}, Coluna: {erro.coluna})")
         return False
-    else:
-        print("Análise léxica concluída sem erros.")
-    
-    print("\n=== ANÁLISE SINTÁTICA ===")
-    
-   
-    tokens_filtrados = [t for t in tokens if t.tipo != TipoToken.COMENTARIO and t.tipo != TipoToken.EOF]
-    
-    print(f"Analisando {len(tokens_filtrados)} tokens...")
-    
 
+    print("Análise léxica concluída sem erros.")
+    tokens_filtrados = [t for t in tokens if t.tipo != TipoToken.COMENTARIO and t.tipo != TipoToken.EOF]
+
+    print("\n=== ANÁLISE SINTÁTICA ===")
     i = 0
-    estruturas_encontradas = []
-    
+    estruturas = []
+
     while i < len(tokens_filtrados):
         token = tokens_filtrados[i]
-        
-   
-        if (token.tipo == TipoToken.PALAVRA_CHAVE and token.valor == "fx"):
-            print(f"Encontrada declaração de função na linha {token.linha}")
-            # fx nome ( param => tipo , param => tipo ) => tipo { ... }
-            funcao_valida = True
+
+        # Identificação de função fx
+        if token.tipo == TipoToken.PALAVRA_CHAVE and token.valor == "fx":
             j = i + 1
-            
-   
+            # Nome da função
             if j < len(tokens_filtrados) and tokens_filtrados[j].tipo == TipoToken.IDENTIFICADOR:
-                nome_funcao = tokens_filtrados[j].valor
-                print(f"  Nome da função: {nome_funcao}")
+                nome = tokens_filtrados[j].valor
                 j += 1
-                
-     
+                # Parêntese de início dos parâmetros
                 if j < len(tokens_filtrados) and tokens_filtrados[j].valor == "(":
                     j += 1
                     parametros = []
-                    
-                 
+                    # Leitura dos parâmetros
                     while j < len(tokens_filtrados) and tokens_filtrados[j].valor != ")":
                         if tokens_filtrados[j].tipo == TipoToken.IDENTIFICADOR:
-                            param_nome = tokens_filtrados[j].valor
+                            nome_param = tokens_filtrados[j].valor
                             j += 1
                             if j < len(tokens_filtrados) and tokens_filtrados[j].valor == "=>":
                                 j += 1
                                 if j < len(tokens_filtrados) and tokens_filtrados[j].tipo == TipoToken.TIPO:
-                                    param_tipo = tokens_filtrados[j].valor
-                                    parametros.append(f"{param_nome}: {param_tipo}")
+                                    tipo_param = tokens_filtrados[j].valor
+                                    parametros.append(f"{nome_param}: {tipo_param}")
                                     j += 1
+                                    # Separador de parâmetros
                                     if j < len(tokens_filtrados) and tokens_filtrados[j].valor == ",":
                                         j += 1
+                                else:
+                                    break
+                            else:
+                                break
                         else:
                             j += 1
-                    
-                    print(f"  Parâmetros: {parametros}")
-                    
+                    # Parêntese de fim dos parâmetros
                     if j < len(tokens_filtrados) and tokens_filtrados[j].valor == ")":
                         j += 1
+                        # Tipo de retorno
                         if j < len(tokens_filtrados) and tokens_filtrados[j].valor == "=>":
                             j += 1
                             if j < len(tokens_filtrados) and tokens_filtrados[j].tipo == TipoToken.TIPO:
                                 tipo_retorno = tokens_filtrados[j].valor
-                                print(f"  Tipo de retorno: {tipo_retorno}")
                                 j += 1
-                                
-                               
+                                # Corpo da função
                                 if j < len(tokens_filtrados) and tokens_filtrados[j].valor == "{":
                                     j += 1
+                                    nivel = 1
                                     comandos = 0
-                                    nivel_chaves = 1
-                                    
-                                    while j < len(tokens_filtrados) and nivel_chaves > 0:
+                                    # Contagem de comandos no corpo
+                                    while j < len(tokens_filtrados) and nivel > 0:
                                         if tokens_filtrados[j].valor == "{":
-                                            nivel_chaves += 1
+                                            nivel += 1
                                         elif tokens_filtrados[j].valor == "}":
-                                            nivel_chaves -= 1
+                                            nivel -= 1
                                         elif tokens_filtrados[j].tipo == TipoToken.PALAVRA_CHAVE:
                                             comandos += 1
                                         j += 1
-                                    
-                                    print(f"  Comandos no corpo: {comandos}")
-                                    estruturas_encontradas.append(f"Função {nome_funcao}")
-            
+                                    print(f"Função {nome} (params: {parametros}) => {tipo_retorno} com {comandos} comandos.")
+                                    estruturas.append(f"Função {nome}")
             i = j
-        
-       
-        elif (token.tipo == TipoToken.PALAVRA_CHAVE and token.valor == "vx"):
-            print(f"Encontrada declaração de variável na linha {token.linha}")
+
+        # Identificação de variável vx
+        elif token.tipo == TipoToken.PALAVRA_CHAVE and token.valor == "vx":
             j = i + 1
-            
+            # Nome da variável
             if j < len(tokens_filtrados) and tokens_filtrados[j].tipo == TipoToken.IDENTIFICADOR:
-                nome_var = tokens_filtrados[j].valor
+                nome = tokens_filtrados[j].valor
                 j += 1
                 if j < len(tokens_filtrados) and tokens_filtrados[j].valor == "=>":
                     j += 1
                     if j < len(tokens_filtrados) and tokens_filtrados[j].tipo == TipoToken.TIPO:
-                        tipo_var = tokens_filtrados[j].valor
+                        tipo = tokens_filtrados[j].valor
                         j += 1
-                        
-                        valor_inicial = None
+                        # Atribuição inicial
                         if j < len(tokens_filtrados) and tokens_filtrados[j].valor == ":=":
                             j += 1
                             if j < len(tokens_filtrados):
-                                valor_inicial = tokens_filtrados[j].valor
+                                valor = tokens_filtrados[j].valor
                                 j += 1
-                        
-                        print(f"  Variável: {nome_var}: {tipo_var}")
-                        if valor_inicial:
-                            print(f"  Valor inicial: {valor_inicial}")
-                        
-                        estruturas_encontradas.append(f"Variável {nome_var}")
-                        
-                   
+                                print(f"Variável {nome}: {tipo} = {valor}")
+                        else:
+                            print(f"Variável {nome}: {tipo}")
+                        estruturas.append(f"Variável {nome}")
+                        # Pular até o fim da declaração
                         while j < len(tokens_filtrados) and tokens_filtrados[j].valor != ";":
                             j += 1
-                        if j < len(tokens_filtrados):
-                            j += 1
-            
+                        j += 1
             i = j
-        
-      
-        elif (token.tipo == TipoToken.IDENTIFICADOR and 
-              i + 1 < len(tokens_filtrados) and 
-              tokens_filtrados[i + 1].valor == ":="):
-            print(f"Encontrada atribuição na linha {token.linha}")
-            nome_var = token.valor
-            j = i + 2  # Pula identificador e :=
-            
-         
+
+        # Atribuições fora da declaração de variável
+        elif token.tipo == TipoToken.IDENTIFICADOR and i + 1 < len(tokens_filtrados) and tokens_filtrados[i + 1].valor == ":=":
+            nome = token.valor
+            j = i + 2
             while j < len(tokens_filtrados) and tokens_filtrados[j].valor != ";":
                 j += 1
-            if j < len(tokens_filtrados):
-                j += 1
-            
-            print(f"  Atribuição para: {nome_var}")
-            estruturas_encontradas.append(f"Atribuição {nome_var}")
+            print(f"Atribuição para {nome}")
+            estruturas.append(f"Atribuição {nome}")
+            j += 1
             i = j
-        
-    
-        elif (token.tipo == TipoToken.PALAVRA_CHAVE and token.valor == "out"):
-            print(f"Encontrado comando de saída na linha {token.linha}")
+
+        # Comando de saída (out)
+        elif token.tipo == TipoToken.PALAVRA_CHAVE and token.valor == "out":
+            print(f"Comando de saída na linha {token.linha}")
             j = i + 1
-            
-            # Pula até o ponto e vírgula
             while j < len(tokens_filtrados) and tokens_filtrados[j].valor != ";":
                 j += 1
-            if j < len(tokens_filtrados):
-                j += 1
-            
-            estruturas_encontradas.append("Comando de saída")
+            j += 1
+            estruturas.append("Comando de saída")
             i = j
-        
+
+        # Qualquer outro caso
         else:
             i += 1
-    
-    print(f"\n=== RESULTADO DA ANÁLISE ===")
-    print(f"Estruturas sintáticas encontradas: {len(estruturas_encontradas)}")
-    for estrutura in estruturas_encontradas:
-        print(f"  - {estrutura}")
-    
-    print("\nAnálise sintática concluída com sucesso!")
+
+    # Resultado final
+    print("\n=== RESULTADO DA ANÁLISE ===")
+    for e in estruturas:
+        print(f"  - {e}")
     return True
-
-if __name__ == "__main__":
-    codigo_exemplo = '''
-    ## Programa exemplo em Zyntex
-    fx calcular(x => int, y => int) => int {
-        vx resultado => int;
-        resultado := x ++ y;
-        rx resultado;
-    }
-    
-    vx num1 => int := 10;
-    vx num2 => int := 5;
-    vx soma => int;
-    
-    soma := calcular(num1, num2);
-    out soma;
-    '''
-    
-    print("=== ANALISADOR SINTÁTICO ZYNTEX ===")
-    sucesso = analisar_programa_simples(codigo_exemplo)
-    
-    if sucesso:
-        print("\n✓ Programa Zyntex analisado com sucesso!")
-    else:
-        print("\n✗ Erro na análise do programa Zyntex.")
-
