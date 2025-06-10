@@ -20,12 +20,26 @@ def analisar_lexico(codigo):
 
         # Comentários
         if codigo[i:i+2] == "##":
+            i += 2
             while i < tamanho and codigo[i] != '\n':
                 i += 1
+            if i < tamanho and codigo[i] == '\n':
+                i += 1  # Consumir a quebra de linha
+            continue
+
+        # Strings entre aspas duplas
+        if c == '"':
+            i += 1
+            string = ''
+            while i < tamanho and codigo[i] != '"':
+                string += codigo[i]
+                i += 1
+            i += 1  # Consumir aspas finais
+            print(f'TOKEN: STRING "{string}"')
             continue
 
         # Números
-        if c.isdigit():
+        if c.isdigit() or (c == '.' and i + 1 < tamanho and codigo[i + 1].isdigit()):
             numero = ''
             tem_ponto = False
             while i < tamanho and (codigo[i].isdigit() or codigo[i] == '.'):
@@ -39,7 +53,7 @@ def analisar_lexico(codigo):
             continue
 
         # Identificadores, palavras-chave ou tipos
-        if c.isalpha():
+        if c.isalpha() or c == '_':
             ident = ''
             while i < tamanho and (codigo[i].isalnum() or codigo[i] == '_'):
                 ident += codigo[i]
