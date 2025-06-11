@@ -26,7 +26,7 @@ def analisar_lexico(codigo):
             print(f"TOKEN: NUMERO {numero}")
 
         # Identificadores e palavras-chave
-
+        uau = 1
 
 
 
