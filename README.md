@@ -1,90 +1,110 @@
 # Zyntex
 
-## Propósito, Objetivo, Paradigma
-Zyntex é uma linguagem de programação multi-paradigma criada com o propósito de oferecer aos estudantes de programação uma forma prática e direta para experimentar e consolidar seu entendimento dos conceitos fundamentais dos paradigmas imperativo (como variáveis, atribuições e controle de fluxo) e funcional (como funções de primeira classe, imutabilidade e funções de ordem superior), permitindo que estudantes escrevam e executem pequenos programas. A combinação desses paradigmas visa permitir que os estudantes comparem diferentes abordagens para a resolução de problemas e apreciem as vantagens de cada estilo. 
+**Zyntex** é uma linguagem de programação **multi-paradigma**, criada com o objetivo de ajudar estudantes a experimentarem e compreenderem os conceitos fundamentais dos paradigmas **imperativo** e **funcional**. Sua sintaxe simplificada e intuitiva permite escrever, analisar e executar pequenos programas, facilitando o aprendizado prático.
 
+---
 
-## Elementos principais (tokens)
-### Tipos de dados
-|     Tipo de dado     | Sintaxe |
-|----------------------|---------|
-|   Número inteiro     |   int   |
-|   Número decimal     |  float  |
-|       Caractere      |  char   |
-| Cadeia de caracteres |  string |
-|       Boolean        |   bool  |
-|       Array          |   arr   |
-|       Lista          |   list  |
-|       Função         | function|
-|       Nulo           |   null  |
-|     Vazio (void)     |   void  |
-|     Dicionários      |   dict  |
+## Tópicos Abordados
 
+- Paradigmas de programação da linguagem: imperativo e funcional
+- Tipagem estática explícita
+- Análise léxica e sintática personalizada
+- Implementação de operadores, estruturas de controle, tipos e funções
 
-### Operadores
-**Unário**
-|   Função   | Sintaxe |
-|------------|---------|
-| Incremento | +>      |
-| Decremento | ->      |
+---
 
-**Aritméticos**
-|     Função    | Sintaxe |
-|---------------|---------|
-| Soma          | ++      |
-| Subtração     | --      |
-| Multiplicação | **      |
-| Divisão       | //      |
-| Radiciação    | rd      |
-| Exponenciação | exp     |
+## Como executar
 
-**Relacionais**
-|        Função       | Sintaxe |
-|---------------------|---------|
-| Igual a             | =?      |
-| Diferente de        | !=?     |
-| Menor que           | <<      |
-| Maior que           | >>      |
-| Menor ou igual      | <=      |
-| Maior ou igual      | >=      |
+### 1. Clone o repositório
 
-**Lógicos**
-| Função | Sintaxe |
-|--------|---------|
-| AND    | &&      |
-| OR     | \|\|    |
-| NOT    | !       |
+```bash
+git clone https://github.com/ThiagoPereiraj/analisador_lexico.git
+cd analisador_lexico
+```
 
-**Atribuição**
-|        Função       | Sintaxe |
-|---------------------|---------|
-| Atribuição de valor | :=      |
-| Atribuição de tipo  | =>      |
+### 2. Execute o analisador léxico
 
+```bash
+python analisador_linguagem_zyntex.py
+```
+
+### 3. Execute o analisador sintático
+
+```bash
+python analisador_sintatico_simples.py
+```
+
+---
+
+## Estrutura da Linguagem
+
+### Tipos de Dados
+
+- Tipos Primitivos: `int`, `float`, `char`, `string`, `bool`, `void`
+- Tipos compostos: `arr`, `list`, `dict`, `function`
 
 ### Palavras-chave
-|        Função       | Sintaxe |
-|---------------------|---------|
-| Definir função      | fx      |
-| Definir variável    | vx      |
-| Condicional 'if'    | zf      |
-| Condicional 'else'  | zl      |
-| Laço 'for'          | fr      |
-| Laço 'while'        | wl      |
-| Impressão           | out     |
-| Entrada de dados    | in      |
-| Retorno de função   | rx      |
 
+| Palavra-chave | Significado |
+|---------------|-------------|
+| `fx`          | Definir função |
+| `vx`          | Definir variável |
+| `zf`, `zl`    | Condicional `if`, `else` |
+| `fr`, `wl`    | Laços `for`, `while` |
+| `out`, `in`   | Saída e entrada de dados |
+| `rx`          | Retorno de função |
 
-### Símbolos
-|        Função       | Sintaxe |
-|---------------------|---------|
-| Comentário          | ##      |
-| Bloco de código     | {}      |
+### Operadores
 
+- Aritméticos: `++`, `--`, `**`, `//`, `rd`, `exp`
+- Relacionais: `=?`, `!=?`, `<<`, `>>`, `<=`, `>=`
+- Lógicos: `&&`, `||`, `!`
+- Atribuição: `:=`, `=>`
+- Unários: `+>`, `->`
+- Delimitadores e Símbolos: `{}`, `()`, `;`, `,`, `##`
 
-## Linguagem de implementação e gerador léxico
+---
 
+## Gramática Formal (BNF)
 
-## Regras de separação e ambiguidade de tokens 
+```bnf
+<programa> ::= <declaracao>*
+<declaracao> ::= <declaracao_funcao> | <declaracao_variavel> | <comando>
+```
 
+> A gramática completa está disponível na [documentação PDF](./Documentação%20da%20Linguagem%20Zyntex.pdf)
+
+---
+
+## Exemplos de Código
+
+```zyntex
+## Soma simples
+vx a => int := 5;
+vx b => int := 10;
+vx soma => int;
+soma := a ++ b;
+out soma;
+
+## Função recursiva
+fx fatorial(n => int) => int {
+  zf (n <= 1) {
+    rx 1;
+  } zl {
+    rx n ** fatorial(n -- 1);
+  }
+}
+```
+
+---
+
+## Componentes do Projeto
+
+| Arquivo                          | Descrição                                 |
+|----------------------------------|-------------------------------------------|
+| `analisador_linguagem_zyntex.py`| Analisador léxico para identificar tokens |
+| `analisador_sintatico_simples.py`| Analisador sintático simplificado         |
+| `README.md`                     | Documentação inicial                      |
+| `Documentação da Linguagem Zyntex.pdf` | Manual completo com gramática e exemplos |
+
+---
