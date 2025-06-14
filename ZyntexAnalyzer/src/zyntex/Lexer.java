@@ -1,3 +1,4 @@
+// zyntex/Lexer.java (Versão que reconhece NÚMEROS)
 package zyntex;
 
 import java.util.ArrayList;
@@ -34,70 +35,75 @@ public class Lexer {
             case ')': addToken(TokenType.RPAREN); break;
             case '{': addToken(TokenType.LBRACE); break;
             case '}': addToken(TokenType.RBRACE); break;
+            case '+': addToken(match('>') ? TokenType.INCREMENT : TokenType.ADDITION); break;
+            case '-': addToken(match('>') ? TokenType.DECREMENT : TokenType.SUBTRACTION); break;
+            case '*': addToken(match('*') ? TokenType.MULTIPLICATION : null); break; // null vai gerar erro
+            case '/': addToken(match('/') ? TokenType.DIVISION : null); break; // null vai gerar erro
 
-            // Operadores com 1 ou 2 caracteres
-            case '!':
-                if (match('=') && match('?')) {
-                    addToken(TokenType.NOT_EQUAL);
-                } else {
-                    addToken(TokenType.LOGICAL_NOT);
-                }
-                break;
-            case '=':
-                if (match('>')) {
-                    addToken(TokenType.ASSIGN_TYPE);
-                } else if (match('?')) {
-                    addToken(TokenType.EQUAL_TO);
-                } else {
-                    error("'=' sozinho não é um operador válido. Você quis dizer '=>' ou '=?'?");
-                }
-                break;
-            case ':':
-                if (match('=')) {
-                    addToken(TokenType.ASSIGN_VALUE);
-                } else {
-                    error("':' sozinho não é um operador válido. Você quis dizer ':='?");
-                }
-                break;
-            case '>':
-                addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER_THAN);
-                break;
-            case '<':
-                addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS_THAN);
-                break;
+            // Operadores com 1, 2 ou 3 caracteres
+            case '!': addToken(match('=') && match('?') ? TokenType.NOT_EQUAL : TokenType.LOGICAL_NOT); break;
+            case '=': addToken(match('>') ? TokenType.ASSIGN_TYPE : (match('?') ? TokenType.EQUAL_TO : null)); break;
+            case ':': addToken(match('=') ? TokenType.ASSIGN_VALUE : null); break;
+            case '>': addToken(match('>') ? TokenType.GREATER_THAN : (match('=') ? TokenType.GREATER_EQUAL : null)); break;
+            case '<': addToken(match('<') ? TokenType.LESS_THAN : (match('=') ? TokenType.LESS_EQUAL : null)); break;
 
             // Comentários
             case '#':
                 if (match('#')) {
-                    // Um comentário vai até o final da linha.
-                    while (peek() != '\n' && !isAtEnd()) {
-                        advance();
-                    }
+                    while (peek() != '\n' && !isAtEnd()) advance();
                 } else {
-                        error("'#' sozinho não é um operador válido. Para comentários, use '##'.");
+                    error("'#' sozinho não é um operador válido. Para comentários, use '##'.");
                 }
                 break;
 
-
             // Ignorar espaços em branco
-            case ' ':
-            case '\r':
-            case '\t':
-                // Simplesmente ignora
-                break;
-            case '\n':
-                line++;
-                column = 1; // Reseta a coluna na nova linha
-                break;
+            case ' ': case '\r': case '\t': break;
+            case '\n': line++; column = 1; break;
 
             default:
-            
-                error(String.format("Caractere inesperado '%c'.", c));
+                if (isDigit(c)) {
+                    // Se for um dígito, começa a reconhecer um número.
+                    number();
+                } else {
+                    error(String.format("Caractere inesperado '%c'.", c));
+                }
                 break;
         }
     }
+    
+    private void number() {
+        while (isDigit(peek())) {
+            advance();
+        }
+
+        // Verifica se há parte fracionária
+        if (peek() == '.' && isDigit(peekNext())) {
+            advance();
+
+            while (isDigit(peek())) {
+                advance();
+            }
+            // Adiciona o token como FLOAT
+            String valueStr = source.substring(startOfLexeme, currentPosition);
+            addToken(TokenType.FLOAT_LITERAL, Double.parseDouble(valueStr));
+        } else {
+            // Adiciona o token como INTEGER
+            String valueStr = source.substring(startOfLexeme, currentPosition);
+            addToken(TokenType.INTEGER_LITERAL, Integer.parseInt(valueStr));
+        }
+    }
+
 
     // --- Métodos de Ajuda ---
+
+    private boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
+    }
+
+    private char peekNext() {
+        if (currentPosition + 1 >= source.length()) return '\0';
+        return source.charAt(currentPosition + 1);
+    }
 
     private boolean isAtEnd() {
         return currentPosition >= source.length();
@@ -119,7 +125,7 @@ public class Lexer {
     }
 
     private char peek() {
-        if (isAtEnd()) return '\0'; // Retorna um caractere nulo se estiver no fim
+        if (isAtEnd()) return '\0'; 
         return source.charAt(currentPosition);
     }
     
