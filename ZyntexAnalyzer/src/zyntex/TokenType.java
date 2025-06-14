@@ -81,4 +81,5 @@ public enum TokenType {
     KEYWORD_NULL,     // null
     KEYWORD_VOID,     // void
 
+    EOF, //Fim do arquivo 'End Of File'
 }
