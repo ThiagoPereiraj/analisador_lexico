@@ -11,9 +11,9 @@ public class Main {
                             
             ## Estrutura condicional para verificar a idade
             zf (idade >> 18) {
-              out("Maior de idade")
+                out("Maior de idade")
             } zl {
-              out("Menor de idade")
+                out("Menor de idade")
             }
             """;
 
