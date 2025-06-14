@@ -2,9 +2,6 @@ package zyntex;
 
 import java.util.ArrayList;
 import java.util.List;
-// Futuramente, importaremos Map e HashMap para as palavras-chave
-// import java.util.Map;
-// import java.util.HashMap;
 
 public class Lexer {
     private final String source;
@@ -38,7 +35,49 @@ public class Lexer {
             case '{': addToken(TokenType.LBRACE); break;
             case '}': addToken(TokenType.RBRACE); break;
 
-            // TODO: Implementar operadores, comentários, strings, números, etc.
+            // Operadores com 1 ou 2 caracteres
+            case '!':
+                if (match('=') && match('?')) {
+                    addToken(TokenType.NOT_EQUAL);
+                } else {
+                    addToken(TokenType.LOGICAL_NOT);
+                }
+                break;
+            case '=':
+                if (match('>')) {
+                    addToken(TokenType.ASSIGN_TYPE);
+                } else if (match('?')) {
+                    addToken(TokenType.EQUAL_TO);
+                } else {
+                    error("'=' sozinho não é um operador válido. Você quis dizer '=>' ou '=?'?");
+                }
+                break;
+            case ':':
+                if (match('=')) {
+                    addToken(TokenType.ASSIGN_VALUE);
+                } else {
+                    error("':' sozinho não é um operador válido. Você quis dizer ':='?");
+                }
+                break;
+            case '>':
+                addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER_THAN);
+                break;
+            case '<':
+                addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS_THAN);
+                break;
+
+            // Comentários
+            case '#':
+                if (match('#')) {
+                    // Um comentário vai até o final da linha.
+                    while (peek() != '\n' && !isAtEnd()) {
+                        advance();
+                    }
+                } else {
+                        error("'#' sozinho não é um operador válido. Para comentários, use '##'.");
+                }
+                break;
+
 
             // Ignorar espaços em branco
             case ' ':
@@ -52,8 +91,8 @@ public class Lexer {
                 break;
 
             default:
-                // No futuro, isso deverá lançar um erro formal.
-                System.err.printf("Erro Léxico: Caractere inesperado '%c' na linha %d, coluna %d%n", c, line, column);
+            
+                error(String.format("Caractere inesperado '%c'.", c));
                 break;
         }
     }
@@ -69,16 +108,31 @@ public class Lexer {
         column++;
         return c;
     }
+    
+    private boolean match(char expected) {
+        if (isAtEnd()) return false;
+        if (source.charAt(currentPosition) != expected) return false;
 
-    // Para tokens sem valor literal (símbolos, palavras-chave)
+        currentPosition++;
+        column++;
+        return true;
+    }
+
+    private char peek() {
+        if (isAtEnd()) return '\0'; // Retorna um caractere nulo se estiver no fim
+        return source.charAt(currentPosition);
+    }
+    
+    private void error(String message) {
+        System.err.printf("Erro Léxico: %s (linha %d, coluna %d)%n", message, line, column);
+    }
+
     private void addToken(TokenType type) {
         addToken(type, null);
     }
 
-    // Para tokens COM valor literal (strings, números)
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(startOfLexeme, currentPosition);
-        // A coluna para o token é a coluna onde ele começou.
         int tokenColumn = column - text.length();
         tokens.add(new Token(type, text, literal, line, tokenColumn));
     }
