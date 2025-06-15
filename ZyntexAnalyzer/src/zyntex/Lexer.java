@@ -1,3 +1,4 @@
+// zyntex/Lexer.java
 package zyntex;
 
 import java.util.ArrayList;
@@ -13,7 +14,6 @@ public class Lexer {
     private int line = 1;
     private int column = 1;
 
-    // O "dicionário" de palavras-chave
     private static final Map<String, TokenType> keywords;
 
     static {
@@ -53,14 +53,12 @@ public class Lexer {
             startOfLexeme = currentPosition;
             scanToken();
         }
-
         tokens.add(new Token(TokenType.EOF, "", null, line, column));
         return tokens;
     }
 
     private void scanToken() {
         char c = advance();
-
         switch (c) {
             case '(':
                 addToken(TokenType.LPAREN);
@@ -109,6 +107,23 @@ public class Lexer {
                     error("'#' sozinho é inválido.");
                 }
                 break;
+
+            // LÓGICA FALTANTE ADICIONADA AQUI
+            case '&':
+                if (match('&')) {
+                    addToken(TokenType.LOGICAL_AND);
+                } else {
+                    error("'&' sozinho é inválido.");
+                }
+                break;
+            case '|':
+                if (match('|')) {
+                    addToken(TokenType.LOGICAL_OR);
+                } else {
+                    error("'|' sozinho é inválido.");
+                }
+                break;
+
             case ' ':
             case '\r':
             case '\t':
@@ -117,15 +132,13 @@ public class Lexer {
                 line++;
                 column = 1;
                 break;
-
             case '"':
                 string();
-                break; 
-
+                break;
             default:
                 if (isDigit(c)) {
                     number();
-                } else if (isAlpha(c)) { 
+                } else if (isAlpha(c)) {
                     identifier();
                 } else {
                     error(String.format("Caractere inesperado '%c'.", c));
@@ -135,66 +148,47 @@ public class Lexer {
     }
 
     private void identifier() {
-        while (isAlphaNumeric(peek())) {
+        while (isAlphaNumeric(peek()))
             advance();
-        }
-
         String text = source.substring(startOfLexeme, currentPosition);
-        TokenType type = keywords.get(text); 
-        if (type == null) {
-            type = TokenType.IDENTIFIER; 
-        }
+        TokenType type = keywords.get(text);
+        if (type == null)
+            type = TokenType.IDENTIFIER;
         addToken(type);
     }
 
     private void string() {
         while (peek() != '"' && !isAtEnd()) {
-            if (peek() == '\n') { // Strings não podem ter múltiplas linhas
+            if (peek() == '\n') {
                 line++;
                 column = 1;
             }
             advance();
         }
-
         if (isAtEnd()) {
             error("String não terminada.");
             return;
         }
-
         advance();
-
         String value = source.substring(startOfLexeme + 1, currentPosition - 1);
         addToken(TokenType.STRING_LITERAL, value);
     }
 
     private void number() {
-        while (isDigit(peek())) {
+        while (isDigit(peek()))
             advance();
-        }
-
-        // Verifica se há parte fracionária
         if (peek() == '.' && isDigit(peekNext())) {
             advance();
-
-            while (isDigit(peek())) {
+            while (isDigit(peek()))
                 advance();
-            }
-            // Adiciona o token como FLOAT
-            String valueStr = source.substring(startOfLexeme, currentPosition);
-            addToken(TokenType.FLOAT_LITERAL, Double.parseDouble(valueStr));
+            addToken(TokenType.FLOAT_LITERAL, Double.parseDouble(source.substring(startOfLexeme, currentPosition)));
         } else {
-            // Adiciona o token como INTEGER
-            String valueStr = source.substring(startOfLexeme, currentPosition);
-            addToken(TokenType.INTEGER_LITERAL, Integer.parseInt(valueStr));
+            addToken(TokenType.INTEGER_LITERAL, Integer.parseInt(source.substring(startOfLexeme, currentPosition)));
         }
     }
 
-    // --- Métodos de Ajuda ---
-
     private boolean isAlpha(char c) {
-        return (c >= 'a' && c <= 'z') ||
-                (c >= 'A' && c <= 'Z') ||
-                c == '_';
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
     }
 
     private boolean isAlphaNumeric(char c) {
@@ -216,17 +210,13 @@ public class Lexer {
     }
 
     private char advance() {
-        char c = source.charAt(currentPosition++);
         column++;
-        return c;
+        return source.charAt(currentPosition++);
     }
 
     private boolean match(char expected) {
-        if (isAtEnd())
+        if (isAtEnd() || source.charAt(currentPosition) != expected)
             return false;
-        if (source.charAt(currentPosition) != expected)
-            return false;
-
         currentPosition++;
         column++;
         return true;
@@ -239,7 +229,7 @@ public class Lexer {
     }
 
     private void error(String message) {
-        System.err.printf("Erro Léxico: %s (linha %d, coluna %d)%n", message, line, column);
+        System.err.printf("Erro Léxico: %s (linha %d, coluna %d)%n", message, line, column - 1);
     }
 
     private void addToken(TokenType type) {
@@ -249,6 +239,9 @@ public class Lexer {
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(startOfLexeme, currentPosition);
         int tokenColumn = column - text.length();
+        if (tokenColumn < 1)
+            tokenColumn = 1;
         tokens.add(new Token(type, text, literal, line, tokenColumn));
     }
+
 }
