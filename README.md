@@ -135,3 +135,32 @@ zf (idade >> 18) {
 } zl {
   out("Menor de idade")
 }
+```
+
+## Como Executar o Projeto no IntelliJ IDEA
+
+Este projeto foi desenvolvido em Java e pode ser facilmente configurado e executado na IDE IntelliJ IDEA. Siga os passos abaixo para configurar o ambiente após clonar o repositório.
+
+1.  **Abrir o Projeto:**
+    * Na tela inicial do IntelliJ, escolha a opção **`Open`**.
+    * Navegue até a pasta **raiz** do projeto que você clonou (a pasta que contém a subpasta `src`) e selecione-a.
+
+2.  **Configurar o SDK do Projeto e a Pasta de Saída:**
+    * Com o projeto aberto, vá até o menu `File -> Project Structure...`.
+    * Na janela que abrir, na aba **`Project`**, configure os seguintes campos:
+        * **`SDK`**: Selecione uma versão do Java (JDK) **17 ou superior**. Se nenhuma estiver disponível, use a opção `Add SDK... -> Download JDK...` para que o IntelliJ baixe uma para você.
+        * **`Compiler output`**: Clique no ícone de pasta (📁) e selecione ou crie uma pasta chamada `out` na raiz do projeto. É nesta pasta que o IntelliJ salvará os arquivos `.class` compilados.
+    * Clique em `Apply`.
+
+3.  **Marcar a Pasta de Código-Fonte (`src`):**
+    * Ainda na janela `Project Structure`, vá para a aba **`Modules`** no menu da esquerda.
+    * No painel da direita, selecione a aba **`Sources`**.
+    * Na árvore de diretórios, clique na pasta `src`.
+    * Com a pasta `src` selecionada, clique no botão **`Sources`** (marcado em azul) no topo. A pasta `src` ficará azul, indicando que o IntelliJ agora a reconhece como a raiz do seu código-fonte.
+    * Clique em **`OK`** para fechar a janela.
+
+4.  **Executar o Programa:**
+    * Aguarde alguns segundos para o IntelliJ reindexar o projeto.
+    * Navegue até `src/zyntex/Main.java` e abra o arquivo.
+    * Um ícone de **play verde (▶️)** deve aparecer ao lado do método `main`. Clique nele e selecione **`Run 'Main.main()'`**.
+    * A saída do programa será exibida no painel **`Run`** na parte inferior da IDE.
