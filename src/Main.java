@@ -28,11 +28,11 @@ public class Main {
         for (Token token : tokens) {
             System.out.println(token);
         }
-        // Parser parser = new Parser(tokens);
-        // List<Stmt> statements = parser.parse();
+         Parser parser = new Parser(tokens);
+         List<Stmt> statements = parser.parse();
 
-        // System.out.println("-------------------------");
-        // System.out.println("Árvore de Sintaxe Gerada:");
-        // System.out.println(new AstPrettyPrinter().print(statements));
+         System.out.println("-------------------------");
+         System.out.println("Árvore de Sintaxe Gerada:");
+         System.out.println(new AstPrettyPrinter().print(statements));
     }
 }
