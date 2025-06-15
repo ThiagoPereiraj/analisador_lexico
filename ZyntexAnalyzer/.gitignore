@@ -1,0 +1,9 @@
+# Arquivos gerados pelo compilador do Java
+/out/
+*.class
+
+# Arquivos de metadados do IntelliJ
+/.idea/
+
+# Arquivos de log do Java (opcional, mas boa prática)
+*.log
