@@ -1,5 +1,4 @@
 package zyntex;
-
 public record Token(
     TokenType type,
     String lexeme,
