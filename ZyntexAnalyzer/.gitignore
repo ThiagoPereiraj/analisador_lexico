@@ -1,9 +1,10 @@
-# Arquivos gerados pelo compilador do Java
-/out/
+# Arquivos compilados Java
 *.class
+*.jar
+*.war
+*.ear
 
-# Arquivos de metadados do IntelliJ
-/.idea/
-
-# Arquivos de log do Java (opcional, mas boa prática)
-*.log
+# Arquivos de IDE
+.idea/
+.vscode/
+*.iml
