@@ -4,6 +4,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+        // Código fonte de exemplo na linguagem Zyntex
         String sourceCode = "vx idade := 25;\n" + //
                         "zf (idade >> 18) {\n" + //
                         "  out(\"Maior de idade\");\n" + //
